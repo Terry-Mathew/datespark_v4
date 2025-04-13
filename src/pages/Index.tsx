@@ -5,7 +5,7 @@ import FeatureCard from "@/components/FeatureCard";
 import TestimonialCard from "@/components/TestimonialCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Upload, MessageCircle, Camera, Heart, Sparkles, Users } from "lucide-react";
+import { Upload, MessageCircle, Camera, Heart, Sparkles, Users, Edit, Zap } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,14 +23,30 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Get AI-powered feedback on your profile photos and learn the perfect conversation starters to match with your crush.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button 
               size="lg" 
               className="text-lg"
               onClick={() => navigate("/profile-analysis")}
             >
-              <Upload className="mr-2 h-5 w-5" />
+              <Camera className="mr-2 h-5 w-5" />
               Analyze My Profile
+            </Button>
+            <Button 
+              size="lg" 
+              className="text-lg bg-accent text-accent-foreground hover:bg-accent/90"
+              onClick={() => navigate("/build-profile")}
+            >
+              <Edit className="mr-2 h-5 w-5" />
+              Build My Profile
+            </Button>
+            <Button 
+              size="lg" 
+              className="text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => navigate("/prompt-punch-up")}
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Prompt Punch-Up
             </Button>
             <Button 
               size="lg" 
@@ -51,7 +67,7 @@ const Index = () => {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              DateWhisperer uses advanced AI to help you stand out in the dating world.
+              DateSpark uses advanced AI to help you stand out in the dating world.
             </p>
           </div>
           
@@ -62,19 +78,19 @@ const Index = () => {
               description="Share your dating profile photos and get personalized feedback on how to improve them."
             />
             <FeatureCard
+              icon={Edit}
+              title="Build Your Bio"
+              description="Create a witty, unique dating profile bio that captures your personality in seconds."
+            />
+            <FeatureCard
+              icon={Zap}
+              title="Punch Up Your Prompts"
+              description="Generate quirky, funny one-liners for your dating app prompts that will make you stand out."
+            />
+            <FeatureCard
               icon={Sparkles}
               title="AI Analysis"
               description="Our AI analyzes your photos and provides specific suggestions to make your profile more attractive."
-            />
-            <FeatureCard
-              icon={Heart}
-              title="Find Better Matches"
-              description="With an optimized profile, you'll attract more quality matches and meaningful connections."
-            />
-            <FeatureCard
-              icon={Upload}
-              title="Share Their Profile"
-              description="Upload a screenshot of your crush's profile to understand them better."
             />
             <FeatureCard
               icon={MessageCircle}
@@ -82,9 +98,9 @@ const Index = () => {
               description="Receive tailored conversation starters based on their interests and profile content."
             />
             <FeatureCard
-              icon={Users}
-              title="Make Meaningful Connections"
-              description="Break the ice with confidence and build genuine connections from the start."
+              icon={Heart}
+              title="Find Better Matches"
+              description="With an optimized profile, you'll attract more quality matches and meaningful connections."
             />
           </div>
         </div>
@@ -95,7 +111,7 @@ const Index = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Success Stories</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Hear from people who've improved their dating lives with DateWhisperer.
+            Hear from people who've improved their dating lives with DateSpark.
           </p>
         </div>
         
@@ -106,12 +122,12 @@ const Index = () => {
             image="https://source.unsplash.com/random/100x100/?portrait,man"
           />
           <TestimonialCard 
-            quote="The conversation starters were a game-changer. Instead of the usual 'hey', I had meaningful conversations that actually led to dates."
+            quote="The bio generator created a profile that actually sounds like me! It helped me showcase my personality in a way I couldn't do myself."
             author="Emma, 24"
             image="https://source.unsplash.com/random/100x100/?portrait,woman"
           />
           <TestimonialCard 
-            quote="I was skeptical at first, but the AI gave me insights about my profile I never would have noticed. Now I'm dating someone amazing!"
+            quote="The prompt punch-up feature gave me hilarious responses that got people messaging me first. Game changer!"
             author="Michael, 32"
             image="https://source.unsplash.com/random/100x100/?portrait,man2"
           />
@@ -126,15 +142,29 @@ const Index = () => {
               Ready to Transform Your Dating Life?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of people who are finding better matches and making meaningful connections with DateWhisperer.
+              Join thousands of people who are finding better matches and making meaningful connections with DateSpark.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-wrap gap-4 justify-center">
               <Button 
                 size="lg" 
                 className="text-lg"
                 onClick={() => navigate("/profile-analysis")}
               >
                 Analyze My Profile
+              </Button>
+              <Button 
+                size="lg" 
+                className="text-lg bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => navigate("/build-profile")}
+              >
+                Build My Profile
+              </Button>
+              <Button 
+                size="lg" 
+                className="text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => navigate("/prompt-punch-up")}
+              >
+                Prompt Punch-Up
               </Button>
               <Button 
                 size="lg" 

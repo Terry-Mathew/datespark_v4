@@ -12,7 +12,7 @@ const Navbar = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">DateWhisperer</span>
+          <span className="text-xl font-bold">DateSpark</span>
         </Link>
         
         {/* Mobile menu button */}
@@ -32,6 +32,12 @@ const Navbar = () => {
           </Link>
           <Link to="/profile-analysis" className="text-foreground/80 hover:text-foreground transition-colors">
             Profile Analysis
+          </Link>
+          <Link to="/build-profile" className="text-foreground/80 hover:text-foreground transition-colors">
+            Build My Profile
+          </Link>
+          <Link to="/prompt-punch-up" className="text-foreground/80 hover:text-foreground transition-colors">
+            Prompt Punch-Up
           </Link>
           <Link to="/conversation-starters" className="text-foreground/80 hover:text-foreground transition-colors">
             Conversation Starters
@@ -58,6 +64,20 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Profile Analysis
+              </Link>
+              <Link 
+                to="/build-profile" 
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Build My Profile
+              </Link>
+              <Link 
+                to="/prompt-punch-up" 
+                className="text-foreground/80 hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Prompt Punch-Up
               </Link>
               <Link 
                 to="/conversation-starters" 
