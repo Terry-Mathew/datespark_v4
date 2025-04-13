@@ -25,24 +25,24 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					DEFAULT: '#FFB800',
+					foreground: '#1A1A1A'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: '#E94E77',
+					foreground: '#FFFFFF'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: '#6B4DE6',
+					foreground: '#FFFFFF'
+				},
+				muted: {
+					DEFAULT: '#F4F4F5',
+					foreground: '#71717A'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
-				},
-				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -57,6 +57,12 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontSize: {
+				'display': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+				'title': ['3.75rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+				'subtitle': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+				'lead': ['1.25rem', { lineHeight: '1.6', letterSpacing: '-0.01em' }],
 			},
 			fontFamily: {
 				sans: ['Poppins', 'sans-serif'],
@@ -85,14 +91,28 @@ export default {
 				'slideUp': {
 					from: { transform: 'translateY(10px)', opacity: '0' },
 					to: { transform: 'translateY(0)', opacity: '1' }
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fadeIn': 'fadeIn 0.5s ease-out forwards',
-				'slideUp': 'slideUp 0.5s ease-out forwards'
-			}
+				'slideUp': 'slideUp 0.5s ease-out forwards',
+				'fade-in': 'fade-in 1s ease-out forwards'
+			},
+			spacing: {
+				'section': '40px',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
