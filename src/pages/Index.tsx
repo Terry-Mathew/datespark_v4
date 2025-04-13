@@ -25,7 +25,7 @@ const Index = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Button 
               size="lg" 
-              className="text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
               onClick={() => navigate("/profile-analysis")}
             >
               <Camera className="mr-2 h-5 w-5" />
@@ -33,7 +33,7 @@ const Index = () => {
             </Button>
             <Button 
               size="lg" 
-              className="text-lg bg-accent text-accent-foreground hover:bg-accent/90"
+              className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
               onClick={() => navigate("/build-profile")}
             >
               <Edit className="mr-2 h-5 w-5" />
@@ -41,7 +41,7 @@ const Index = () => {
             </Button>
             <Button 
               size="lg" 
-              className="text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90"
+              className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
               onClick={() => navigate("/prompt-punch-up")}
             >
               <Zap className="mr-2 h-5 w-5" />
@@ -49,7 +49,7 @@ const Index = () => {
             </Button>
             <Button 
               size="lg" 
-              className="text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
               onClick={() => navigate("/conversation-starters")}
             >
               <MessageCircle className="mr-2 h-5 w-5" />
@@ -145,29 +145,28 @@ const Index = () => {
             <div className="flex flex-wrap gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-lg"
+                className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
                 onClick={() => navigate("/profile-analysis")}
               >
                 Analyze My Profile
               </Button>
               <Button 
                 size="lg" 
-                className="text-lg bg-accent text-accent-foreground hover:bg-accent/90"
+                className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
                 onClick={() => navigate("/build-profile")}
               >
                 Build My Profile
               </Button>
               <Button 
                 size="lg" 
-                className="text-lg bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
                 onClick={() => navigate("/prompt-punch-up")}
               >
                 Prompt Punch-Up
               </Button>
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="text-lg"
+                className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
                 onClick={() => navigate("/conversation-starters")}
               >
                 Get Conversation Starters
@@ -176,7 +175,6 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Background decorations */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
           <div className="absolute top-10 left-10 w-24 h-24 rounded-full bg-primary/5 animate-float"></div>
           <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full bg-primary/10 animate-float" style={{ animationDelay: '1s' }}></div>
