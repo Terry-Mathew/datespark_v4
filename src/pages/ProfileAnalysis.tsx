@@ -15,34 +15,34 @@ const sampleAnalysis = {
   title: "Your Profile Analysis",
   score: 7.5,
   firstImpression: {
-    would_swipe: "right",
+    would_swipe: "right" as "right" | "left", // Fixed type
     reason: "Your profile stands out with an authentic smile and good lighting, though the background is slightly distracting."
   },
   photoFeedback: [
     {
-      type: "positive",
+      type: "positive" as "positive" | "improvement", // Fixed type
       text: "Your smile is authentic and creates a warm, approachable vibe."
     },
     {
-      type: "positive",
+      type: "positive" as "positive" | "improvement", // Fixed type
       text: "The lighting in your photo is excellent, highlighting your features well."
     },
     {
-      type: "improvement",
+      type: "improvement" as "positive" | "improvement", // Fixed type
       text: "The background is cluttered, which can be distracting. Try a cleaner setting."
     },
     {
-      type: "improvement",
+      type: "improvement" as "positive" | "improvement", // Fixed type
       text: "Your photo appears to be a selfie. Consider adding photos taken by others to show more natural poses."
     }
   ],
   bioFeedback: [
     {
-      type: "positive",
+      type: "positive" as "positive" | "improvement", // Fixed type
       text: "Your bio has a good balance of humor and sincerity."
     },
     {
-      type: "improvement",
+      type: "improvement" as "positive" | "improvement", // Fixed type
       text: "The phrase 'work hard, play hard' is overused in dating profiles. Try something more unique."
     }
   ],
