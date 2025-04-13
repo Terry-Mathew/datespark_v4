@@ -139,23 +139,32 @@ const Index = () => {
         <section className="py-12 md:py-20">
           <div className="container px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              <FeatureCard
-                icon={Heart}
-                title="Build My Profile"
-                description="Create an engaging bio that captures attention and shows your authentic self."
-              />
+              <Link to="/build-profile">
+                <FeatureCard
+                  icon={Heart}
+                  title="Build My Profile"
+                  description="Create an engaging bio that captures attention and shows your authentic self."
+                  className="cursor-pointer"
+                />
+              </Link>
               
-              <FeatureCard
-                icon={Zap}
-                title="Prompt Punch-Up"
-                description="Craft standout prompt responses that spark meaningful conversations."
-              />
+              <Link to="/prompt-punch-up">
+                <FeatureCard
+                  icon={Zap}
+                  title="Prompt Punch-Up"
+                  description="Craft standout prompt responses that spark meaningful conversations."
+                  className="cursor-pointer"
+                />
+              </Link>
               
-              <FeatureCard
-                icon={MessageSquare}
-                title="Conversation Starters"
-                description="Get personalized opening messages that lead to real connections."
-              />
+              <Link to="/conversation-starters">
+                <FeatureCard
+                  icon={MessageSquare}
+                  title="Conversation Starters"
+                  description="Get personalized opening messages that lead to real connections."
+                  className="cursor-pointer"
+                />
+              </Link>
             </div>
           </div>
         </section>
