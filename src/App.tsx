@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import ProfileAnalysis from "./pages/ProfileAnalysis";
 import ConversationStarters from "./pages/ConversationStarters";
 import NotFound from "./pages/NotFound";
+import BuildProfile from "./pages/BuildProfile";
+import PromptPunchUp from "./pages/PromptPunchUp";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/profile-analysis" element={<ProfileAnalysis />} />
           <Route path="/conversation-starters" element={<ConversationStarters />} />
+          <Route path="/build-profile" element={<BuildProfile />} />
+          <Route path="/prompt-punch-up" element={<PromptPunchUp />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

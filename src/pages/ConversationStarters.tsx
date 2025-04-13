@@ -2,47 +2,56 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import ImageUploader from "@/components/ImageUploader";
 import ConversationStarter from "@/components/ConversationStarter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
+import { MessageCircle, ThumbsUp, Lightbulb } from "lucide-react";
 
-const sampleConversationStarters = [
+interface ProfileSummary {
+  vibe: string;
+  swipeAppeal: number;
+  standoutPoints: string[];
+}
+
+interface StarterMessage {
+  type: "playful" | "sincere" | "specific";
+  message: string;
+}
+
+const sampleProfileSummary: ProfileSummary = {
+  vibe: "Wave-riding taco enthusiast with an adventurous spirit.",
+  swipeAppeal: 7,
+  standoutPoints: ["Surfing passion", "Foodie (tacos)", "Outdoor activities"]
+};
+
+const sampleMessages: StarterMessage[] = [
   {
-    message: "I noticed you're into hiking too! What's the most breathtaking trail you've been on? I recently conquered Mount Rainier and the views were absolutely life-changing.",
-    category: "Shared Interest"
+    type: "playful",
+    message: "Surf's up—tacos later? I know a place that would make a wave-rider like you approve."
   },
   {
-    message: "Your travel photos are amazing! That beach in your third pic looks familiar - is that in Thailand? I spent a month there last year and fell in love with the culture.",
-    category: "Travel"
+    type: "sincere",
+    message: "Your surf vibe really caught my attention. What's your favorite spot to catch waves?"
   },
   {
-    message: "I see you're a fellow dog lover! Your golden retriever is adorable. What's their name? My rescue pup Luna has been my adventure buddy for 3 years now.",
-    category: "Pets"
-  },
-  {
-    message: "That restaurant in your profile pic looks fantastic! I'm always on the hunt for new foodie spots. Is it local? I'd love to hear your recommendations.",
-    category: "Food & Dining"
-  },
-  {
-    message: "Your playlist mentions some of my favorite bands! Have you listened to [band similar to ones they like]? Their new album reminds me a lot of [band they mentioned].",
-    category: "Music"
-  },
-  {
-    message: "I'm impressed by your rock climbing photos! I'm a beginner myself and just started bouldering. Any tips for someone just getting into the sport?",
-    category: "Activities"
+    type: "specific",
+    message: "I noticed you're into tacos and surfing - have you tried the food trucks at Sunset Beach? Perfect post-surf meal!"
   }
 ];
 
 const ConversationStarters = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [starters, setStarters] = useState<typeof sampleConversationStarters | null>(null);
+  const [profileSummary, setProfileSummary] = useState<ProfileSummary | null>(null);
+  const [starterMessages, setStarterMessages] = useState<StarterMessage[] | null>(null);
   
   const handleImageUpload = (uploadedFile: File) => {
     setFile(uploadedFile);
-    setStarters(null); // Reset results when a new image is uploaded
+    setProfileSummary(null);
+    setStarterMessages(null);
   };
   
   const generateStarters = () => {
@@ -55,7 +64,8 @@ const ConversationStarters = () => {
     
     // Simulate API call with a timeout
     setTimeout(() => {
-      setStarters(sampleConversationStarters);
+      setProfileSummary(sampleProfileSummary);
+      setStarterMessages(sampleMessages);
       setIsGenerating(false);
       toast.success("Conversation starters generated!");
     }, 3000);
@@ -66,19 +76,22 @@ const ConversationStarters = () => {
       <Navbar />
       
       <main className="flex-1 pt-24 pb-16">
-        <div className="container max-w-5xl">
+        <div className="container max-w-4xl">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Conversation Starters</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Help Me Message Someone</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Upload a screenshot of your crush's dating profile and get AI-generated conversation starters to help you break the ice.
+              Upload a screenshot of their dating profile and get personalized conversation starters to help you break the ice.
             </p>
           </div>
           
           {/* Upload Section */}
           <Card className="mb-12">
             <CardHeader>
-              <CardTitle>Upload Their Profile</CardTitle>
+              <CardTitle className="flex items-center">
+                <MessageCircle className="mr-2 h-5 w-5 text-primary" />
+                Upload Their Profile
+              </CardTitle>
               <CardDescription>
                 Share a screenshot of the profile you're interested in
               </CardDescription>
@@ -87,11 +100,11 @@ const ConversationStarters = () => {
               <ImageUploader
                 onImageUpload={handleImageUpload}
                 title="Upload Profile Screenshot"
-                description="Drag and drop a screenshot of their profile here, or click to browse"
+                description="Make sure the bio and prompts are clearly visible"
               />
               
               <Button 
-                className="w-full mt-4" 
+                className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={generateStarters} 
                 disabled={!file || isGenerating}
               >
@@ -102,35 +115,100 @@ const ConversationStarters = () => {
           
           {/* Results Section */}
           {isGenerating ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((_, index) => (
-                <ConversationStarter 
-                  key={index}
-                  message=""
-                  category=""
-                  isLoading={true}
-                />
-              ))}
+            <div className="space-y-6">
+              <div className="animate-pulse bg-muted h-48 rounded-lg w-full"></div>
+              <div className="space-y-4">
+                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
+                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
+                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
+              </div>
             </div>
-          ) : starters ? (
+          ) : profileSummary && starterMessages ? (
             <>
-              <h2 className="text-2xl font-bold mb-6">Your Personalized Conversation Starters</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {starters.map((starter, index) => (
-                  <ConversationStarter 
-                    key={index}
-                    message={starter.message}
-                    category={starter.category}
-                  />
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Profile Summary</CardTitle>
+                  <CardDescription>
+                    Based on the text in their profile
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-2">OVERALL VIBE</h3>
+                      <p className="text-lg">{profileSummary.vibe}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-2">SWIPE APPEAL</h3>
+                      <div className="flex items-center gap-4">
+                        <Progress value={profileSummary.swipeAppeal * 10} className="h-2 w-48" />
+                        <span className="font-bold">{profileSummary.swipeAppeal}/10</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-2">WHAT STANDS OUT</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profileSummary.standoutPoints.map((point, index) => (
+                          <Badge key={index} variant="secondary" className="font-normal">
+                            {point}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <h2 className="text-2xl font-bold mb-6">Your Conversation Starters</h2>
+              <div className="space-y-4">
+                {starterMessages.map((starter, index) => (
+                  <Card key={index} className="overflow-hidden">
+                    <div className="bg-gradient-to-r from-secondary/30 to-secondary/10 py-2 px-4 border-b">
+                      <div className="flex items-center">
+                        {starter.type === "playful" && (
+                          <>
+                            <ThumbsUp className="h-4 w-4 mr-2 text-accent" />
+                            <span className="font-medium">Playful Opener</span>
+                          </>
+                        )}
+                        {starter.type === "sincere" && (
+                          <>
+                            <MessageCircle className="h-4 w-4 mr-2 text-primary" />
+                            <span className="font-medium">Sincere Approach</span>
+                          </>
+                        )}
+                        {starter.type === "specific" && (
+                          <>
+                            <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                            <span className="font-medium">Detail-Specific Message</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <CardContent className="py-4">
+                      <div className="flex justify-between">
+                        <p>{starter.message}</p>
+                        <Button variant="ghost" size="sm" className="ml-2" onClick={() => {
+                          navigator.clipboard.writeText(starter.message);
+                          toast.success("Copied to clipboard!");
+                        }}>
+                          Copy
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
+              
               <div className="mt-8 bg-muted/30 rounded-lg p-4 border">
                 <h3 className="font-medium mb-2">Pro Tips:</h3>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li>Personalize these starters further by adding your own experiences</li>
+                  <li>Personalize these starters further by adding your own voice</li>
+                  <li>Choose the message style that feels most natural to you</li>
                   <li>Ask follow-up questions to keep the conversation flowing</li>
                   <li>Be authentic - don't copy messages that don't sound like you</li>
-                  <li>Timing matters - aim to message when they're likely to be active</li>
                 </ul>
               </div>
             </>
