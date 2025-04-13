@@ -304,53 +304,23 @@ const Index = () => {
           </div>
         </section>
         
-        {/* CTA Section */}
-        <section className="py-20 mt-10 bg-gradient-to-b from-primary/5 to-background">
-          <div className="container relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Ready to Transform Your Dating Life?
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of people who are finding better matches and making meaningful connections with DateSpark.
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Button 
-                  size="lg" 
-                  className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
-                  onClick={() => navigate("/profile-analysis")}
-                >
-                  Analyze My Profile
-                </Button>
-                <Button 
-                  size="lg" 
-                  className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
-                  onClick={() => navigate("/build-profile")}
-                >
-                  Build My Profile
-                </Button>
-                <Button 
-                  size="lg" 
-                  className="text-lg bg-[#FFC107] text-black hover:bg-[#FFC107]/90 hover:scale-105 transition-transform"
-                  onClick={() => navigate("/prompt-punch-up")}
-                >
-                  Prompt Punch-Up
-                </Button>
-                <Button 
-                  size="lg" 
-                  className="text-lg bg-[#FF4456] text-white hover:bg-[#FF4456]/90 hover:scale-105 transition-transform"
-                  onClick={() => navigate("/conversation-starters")}
-                >
-                  Get Conversation Starters
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div className="absolute top-10 left-10 w-24 h-24 rounded-full bg-primary/5 animate-float"></div>
-            <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full bg-primary/10 animate-float" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/3 right-1/4 w-16 h-16 rounded-full bg-secondary/20 animate-float" style={{ animationDelay: '0.5s' }}></div>
+        {/* Updated Section */}
+        <section className="py-12 md:py-20 bg-gray-50 border-t border-gray-200">
+          <div className="container px-4 md:px-6 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Start Your Journey to Better Matches
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join thousands of people who are finding better matches and making meaningful connections with DateSpark.
+            </p>
+            <Link to="/get-started" className="block">
+              <Button
+                size="lg"
+                className="bg-red-600 text-white hover:bg-red-700 transition-all duration-300"
+              >
+                Get Started
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
