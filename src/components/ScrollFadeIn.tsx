@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 interface ScrollFadeInProps {
   children: React.ReactNode;
   className?: string;
+  delay?: number; // Add optional delay prop in milliseconds
 }
 
-const ScrollFadeIn = ({ children, className = "" }: ScrollFadeInProps) => {
+const ScrollFadeIn = ({ children, className = "", delay = 0 }: ScrollFadeInProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -18,18 +19,19 @@ const ScrollFadeIn = ({ children, className = "" }: ScrollFadeInProps) => {
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: "50px",
+        threshold: 0.1, // Trigger when 10% of the element is visible
+        rootMargin: "0px 0px -50px 0px", // Trigger slightly before it fully enters viewport
       }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -37,15 +39,17 @@ const ScrollFadeIn = ({ children, className = "" }: ScrollFadeInProps) => {
   return (
     <div
       ref={ref}
-      className={`${className} transition-all duration-1000 ${
+      className={`${className} transition-all duration-700 ease-out ${
         isVisible
           ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-10"
+          : "opacity-0 translate-y-8" // Slightly increase initial translate distance
       }`}
+      style={{ transitionDelay: `${delay}ms` }} // Apply the delay using inline style
     >
       {children}
     </div>
   );
 };
 
-export default ScrollFadeIn; 
+export default ScrollFadeIn;
+

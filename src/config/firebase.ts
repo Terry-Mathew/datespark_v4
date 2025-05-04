@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics, isSupported } from "firebase/analytics"; // Import analytics
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 // IMPORTANT: Replace these with your actual Firebase project configuration values
@@ -13,7 +13,10 @@ import { getAnalytics, isSupported } from "firebase/analytics"; // Import analyt
 // VITE_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
 // VITE_FIREBASE_MESSAGING_SENDER_ID="YOUR_SENDER_ID"
 // VITE_FIREBASE_APP_ID="YOUR_APP_ID"
-// VITE_FIREBASE_MEASUREMENT_ID="YOUR_MEASUREMENT_ID" // Add Measurement ID for Analytics
+// VITE_FIREBASE_MEASUREMENT_ID="YOUR_MEASUREMENT_ID" // Optional
+// VITE_RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID"
+
+// --- Debug logging removed ---
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,7 +25,7 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID // Add Measurement ID
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID // Optional
 };
 
 // Initialize Firebase
@@ -33,7 +36,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Initialize Analytics and export (check for support)
-const analytics = isSupported().then(yes => yes ? getAnalytics(app) : null);
+let analytics: any = null; // Use 'any' or proper type if available
+isSupported().then((yes) => {
+  if (yes) {
+    analytics = getAnalytics(app);
+    console.log("Firebase Analytics initialized.");
+  } else {
+    console.log("Firebase Analytics is not supported in this environment.");
+  }
+});
 
 export { app, auth, db, analytics }; // Export analytics
 
