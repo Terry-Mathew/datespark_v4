@@ -1,36 +1,30 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import FeatureCard from "@/components/FeatureCard";
-import TestimonialCard from "@/components/TestimonialCard";
+// Remove the duplicate FeatureCard definition
+// import FeatureCard from "@/components/FeatureCard"; // Use the imported FeatureCard
+import FeatureCard from "@/components/FeatureCard"; // Import the actual component
+// Remove TestimonialCard import if Testimonials component is used
+// import TestimonialCard from "@/components/TestimonialCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+// Import the Testimonials component
+import Testimonials from "@/components/Testimonials"; 
 import { Upload, MessageCircle, Camera, Heart, Sparkles, Users, Edit, Zap, MessageSquare, Star, PenLine } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
 
+// Remove the duplicate FeatureCard definition from here
+/*
 const FeatureCard = ({ icon: Icon, title, description, className }: {
   icon: any;
   title: string;
   description: string;
   className?: string;
 }) => (
-  <div className={cn("group relative", className)}>
-    <div className="relative p-8 rounded-xl border border-muted-foreground/20 bg-background transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-      {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      {/* Content */}
-      <div className="relative z-10">
-        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Icon className="h-6 w-6 text-primary" />
-        </div>
-        <h3 className="text-xl font-semibold mb-3 text-foreground">{title}</h3>
-        <p className="text-base text-muted-foreground leading-relaxed">{description}</p>
-      </div>
-    </div>
-  </div>
+  // ... implementation ...
 );
+*/
 
 const ProcessCard = ({ 
   icon: Icon, 
@@ -65,7 +59,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1">
+      <main className="flex-1 pt-16"> {/* Add padding-top to account for fixed navbar */}
         {/* Hero Section */}
         <section className="relative py-12 md:py-24 overflow-hidden bg-background">
           <div className="container px-4 md:px-6">
@@ -135,10 +129,21 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Feature Cards Grid */}
+        {/* Feature Cards Grid - Updated to 4 columns */}
         <section className="py-12 md:py-20">
           <div className="container px-4 md:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {/* Make this a 4-column grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              {/* Add Profile Analysis Card */}
+              <Link to="/profile-analysis">
+                <FeatureCard
+                  icon={Camera} 
+                  title="Profile Analysis"
+                  description="Get AI-powered feedback on your photos to improve your profile's appeal."
+                  className="cursor-pointer"
+                />
+              </Link>
+              
               <Link to="/build-profile">
                 <FeatureCard
                   icon={Heart}
@@ -274,35 +279,14 @@ const Index = () => {
           </div>
         </section>
         
-        {/* Testimonials */}
+        {/* Render the Testimonials component here */}
+        <Testimonials />
+        
+        {/* Remove the old hardcoded testimonial section 
         <section className="py-20 mt-10 bg-[#FDF8F3]">
-          <div className="container">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Success Stories</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Hear from people who've improved their dating lives with DateSpark.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <TestimonialCard 
-                quote="I was struggling to get matches until I used the profile analysis. The suggestions were spot on and my matches increased by 300%!"
-                author="Alex, 28"
-                image="https://source.unsplash.com/random/100x100/?portrait,man"
-              />
-              <TestimonialCard 
-                quote="The bio generator created a profile that actually sounds like me! It helped me showcase my personality in a way I couldn't do myself."
-                author="Emma, 24"
-                image="https://source.unsplash.com/random/100x100/?portrait,woman"
-              />
-              <TestimonialCard 
-                quote="The prompt punch-up feature gave me hilarious responses that got people messaging me first. Game changer!"
-                author="Michael, 32"
-                image="https://source.unsplash.com/random/100x100/?portrait,man2"
-              />
-            </div>
-          </div>
+          // ... old code ...
         </section>
+        */}
         
         {/* Updated Section */}
         <section className="py-12 md:py-20 bg-gray-50 border-t border-gray-200">
@@ -331,3 +315,4 @@ const Index = () => {
 };
 
 export default Index;
+
