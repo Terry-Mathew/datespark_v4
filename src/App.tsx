@@ -9,9 +9,14 @@ import BuildProfile from "./pages/BuildProfile";
 import PromptPunchUp from "./pages/PromptPunchUp";
 import BillingPage from "./pages/BillingPage";
 import FeedbackWidget from "@/components/FeedbackWidget";
-// Correct the import casing to match component names (assuming filenames are SignIn.tsx and SignUp.tsx)
 import SignIn from "./pages/SignIn"; 
 import SignUp from "./pages/SignUp"; 
+// Import the new pages
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import HowItWorks from "./pages/HowItWorks";
 
 const queryClient = new QueryClient();
 
@@ -20,14 +25,21 @@ const App = () => (
     <TooltipProvider>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/profile-analysis" element={<ProfileAnalysis />} />
+        {/* Remove ProfileAnalysis route if feature is fully removed */}
+        {/* <Route path="/profile-analysis" element={<ProfileAnalysis />} /> */}
         <Route path="/conversation-starters" element={<ConversationStarters />} />
         <Route path="/build-profile" element={<BuildProfile />} />
         <Route path="/prompt-punch-up" element={<PromptPunchUp />} />
         <Route path="/billing" element={<BillingPage />} />
-        {/* Ensure routes use the correctly imported components */}
         <Route path="/signin" element={<SignIn />} /> 
         <Route path="/signup" element={<SignUp />} /> 
+        {/* Add routes for the new pages */}
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/how-it-works" element={<HowItWorks />} /> {/* Learn More page */}
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <FeedbackWidget />
