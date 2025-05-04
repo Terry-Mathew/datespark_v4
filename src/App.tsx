@@ -9,7 +9,8 @@ import ConversationStarters from "./pages/ConversationStarters";
 import NotFound from "./pages/NotFound";
 import BuildProfile from "./pages/BuildProfile";
 import PromptPunchUp from "./pages/PromptPunchUp";
-import Pricing from "./pages/Pricing";
+// import Pricing from "./pages/Pricing"; // Removing old pricing page if BillingPage replaces it
+import BillingPage from "./pages/BillingPage"; // Import the new BillingPage
 import FeedbackWidget from "@/components/FeedbackWidget";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,8 @@ const App = () => (
           <Route path="/conversation-starters" element={<ConversationStarters />} />
           <Route path="/build-profile" element={<BuildProfile />} />
           <Route path="/prompt-punch-up" element={<PromptPunchUp />} />
-          <Route path="/pricing" element={<Pricing />} />
+          {/* <Route path="/pricing" element={<Pricing />} /> */}
+          <Route path="/billing" element={<BillingPage />} /> {/* Add route for BillingPage */}
           <Route path="*" element={<NotFound />} />
         </Routes>
         <FeedbackWidget />
@@ -36,3 +38,4 @@ const App = () => (
 );
 
 export default App;
+

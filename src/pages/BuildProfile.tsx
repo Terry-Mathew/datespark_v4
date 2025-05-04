@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,77 +5,119 @@ import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { Heart, RefreshCw } from "lucide-react";
+import { Heart, RefreshCw, Copy, Check, Loader2 } from "lucide-react";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { analytics } from "@/config/firebase"; // Import analytics
+import { logEvent } from "firebase/analytics"; // Import logEvent
+
+const functions = getFunctions();
+const generateBioCallable = httpsCallable(functions, 'generateBio');
 
 const BuildProfile = () => {
   const [userInput, setUserInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBio, setGeneratedBio] = useState<string | null>(null);
-  
-  const handleSubmit = () => {
-    if (userInput.length > 100) {
-      toast.error("Please keep your input under 100 words");
+  const [editableBio, setEditableBio] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
+
+  const callGenerateBioFunction = async () => {
+    if (!user) {
+      toast.error("Please sign in to generate a bio.");
       return;
     }
-    
     if (!userInput.trim()) {
       toast.error("Please enter some information about yourself");
       return;
     }
-    
-    setIsGenerating(true);
-    
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      // Example generated bio based on input
-      const exampleBio = userInput.includes("coffee") && userInput.includes("hiking") && userInput.includes("dog") 
-        ? "Coffee's my spark, hiking's my escape, and my dog runs the show—join the adventure?" 
-        : `As a ${userInput.includes("travel") ? "globetrotter" : "local explorer"} with a passion for ${
-            userInput.includes("cooking") ? "culinary experiments" : "discovering new experiences"
-          }, I'm all about authentic connections. ${
-            userInput.includes("music") ? "My playlist is as eclectic as my life story" : "My weekends are mini-adventures waiting to happen"
-          }. Let's skip the small talk and dive into what makes us tick.`;
-      
-      setGeneratedBio(exampleBio);
-      setIsGenerating(false);
-      toast.success("Bio generated successfully!");
-    }, 2000);
-  };
-  
-  const regenerateBio = () => {
-    if (!userInput) {
-      toast.error("Please enter some information first");
+    if (userInput.length > 500) {
+      toast.error("Input text is too long. Please keep it under 500 characters.");
       return;
     }
     
     setIsGenerating(true);
-    
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      // Alternative bio example
-      const alternativeBio = `${
-        userInput.includes("funny") || userInput.includes("humor") ? "Warning: May cause spontaneous laughter. " : ""
-      }Equal parts ${
-        userInput.includes("book") || userInput.includes("read") ? "bookworm" : "adventurer"
-      } and ${
-        userInput.includes("food") || userInput.includes("cooking") ? "foodie" : "conversation enthusiast"
-      }. I believe in genuine connections and ${
-        userInput.includes("travel") ? "collecting passport stamps" : "creating memorable moments"
-      }. Swipe right if you're up for ${
-        userInput.includes("coffee") ? "coffee dates that turn into dinner" : "conversations that go beyond the weather"
-      }.`;
-      
-      setGeneratedBio(alternativeBio);
+    setGeneratedBio(null); 
+    setEditableBio("");
+    setCopied(false); 
+
+    try {
+      const result = await generateBioCallable({ userInput: userInput });
+      const data = result.data as { bio: string }; 
+
+      if (data && data.bio) {
+        setGeneratedBio(data.bio);
+        setEditableBio(data.bio);
+        toast.success("Bio generated successfully!");
+        // Log generate_bio_success event
+        analytics.then(analyticInstance => {
+          if (analyticInstance) {
+            logEvent(analyticInstance, 'generate_bio_success');
+          }
+        });
+      } else {
+        throw new Error("Received an unexpected response from the AI.");
+      }
+    } catch (error: any) {
+      console.error("Error calling generateBio function:", error);
+      toast.error(error.message || "Failed to generate bio. Please try again.");
+      // Log generate_bio_failure event
+      analytics.then(analyticInstance => {
+        if (analyticInstance) {
+          logEvent(analyticInstance, 'generate_bio_failure', { error_message: error.message || 'Unknown error' });
+        }
+      });
+    } finally {
       setIsGenerating(false);
-      toast.success("New bio generated!");
-    }, 2000);
+    }
   };
-  
+
+  const handleSubmit = () => {
+    callGenerateBioFunction();
+    // Log initial bio generation attempt
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'generate_bio_attempt');
+      }
+    });
+  };
+
+  const regenerateBio = () => {
+    callGenerateBioFunction();
+    // Log bio regeneration attempt
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'regenerate_bio_attempt');
+      }
+    });
+  };
+
+  const copyToClipboard = () => {
+    if (editableBio) { 
+      navigator.clipboard.writeText(editableBio);
+      setCopied(true);
+      toast.success("Bio copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000); 
+      // Log bio_copied event
+      analytics.then(analyticInstance => {
+        if (analyticInstance) {
+          logEvent(analyticInstance, 'bio_copied', { feature: 'build_profile' });
+        }
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1 pt-24 pb-16">
+      <motion.main 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex-1 pt-24 pb-16"
+      >
         <div className="container max-w-3xl">
           {/* Header */}
           <div className="text-center mb-12">
@@ -91,7 +132,7 @@ const BuildProfile = () => {
             <CardHeader>
               <CardTitle>Tell Us About Yourself</CardTitle>
               <CardDescription>
-                Enter a few details about your likes, pets, quirks, favorite foods, hobbies — whatever makes you, you!
+                Enter a few details (up to 500 characters) about your likes, pets, quirks, hobbies — whatever makes you, you!
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -100,69 +141,98 @@ const BuildProfile = () => {
                 className="min-h-[100px] resize-none"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                maxLength={400}
+                maxLength={500} 
+                disabled={isGenerating} 
               />
               <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">
-                  {userInput.length}/100 words max
+                  {userInput.length}/500 characters
                 </p>
                 <Button 
-                  className="bg-accent text-white hover:bg-accent/90" 
+                  className="bg-accent text-white hover:bg-accent/90 transition-colors duration-200" 
                   onClick={handleSubmit}
-                  disabled={isGenerating}
+                  disabled={isGenerating || !userInput.trim() || !user} 
                 >
-                  <Heart className="mr-2 h-4 w-4" />
-                  {isGenerating ? "Creating..." : "Create Bio"}
+                  {isGenerating ? (
+                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
+                   ) : (
+                     <><Heart className="mr-2 h-4 w-4" /> Create Bio</>
+                   )}
                 </Button>
               </div>
             </CardContent>
           </Card>
           
-          {/* Results Section */}
-          {generatedBio && (
-            <Card className="border-primary/50">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  Your Custom Bio
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="ml-2" 
-                    onClick={regenerateBio}
-                    disabled={isGenerating}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                  </Button>
-                </CardTitle>
-                <CardDescription>
-                  A witty, unique bio based on your input
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-secondary/20 p-4 rounded-lg border border-secondary/30">
-                  <p className="text-lg">{generatedBio}</p>
-                </div>
-                
-                <div className="mt-6 space-y-4">
-                  <h3 className="text-lg font-semibold">Why This Works:</h3>
-                  <ul className="space-y-2 list-disc pl-5">
-                    <li>Showcases your personality through vivid language</li>
-                    <li>Creates intrigue with specific details from your input</li>
-                    <li>Avoids dating profile clichés and generic phrases</li>
-                    <li>Gives potential matches conversation starters</li>
-                  </ul>
-                  
-                  <div className="flex justify-center mt-4">
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                      Copy to Clipboard
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Results Section with Animation */}
+          <AnimatePresence>
+            {isGenerating && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-center p-8"
+              >
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                <p className="text-muted-foreground">Generating your unique bio...</p>
+              </motion.div>
+            )}
+            {generatedBio && !isGenerating && (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="border-primary/50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Your Custom Bio</span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={regenerateBio}
+                        disabled={isGenerating || !userInput.trim() || !user} 
+                        title="Regenerate Bio"
+                        className="hover:bg-secondary/50 transition-colors duration-200"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </CardTitle>
+                    <CardDescription>
+                      A witty, unique bio based on your input, generated by AI. You can edit it below.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-secondary/20 p-4 rounded-lg border border-secondary/30 relative">
+                      <Textarea
+                        value={editableBio}
+                        onChange={(e) => setEditableBio(e.target.value)}
+                        className="w-full min-h-[100px] resize-none border-0 bg-transparent focus:ring-0 p-0 text-lg"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7 hover:bg-secondary/50 transition-colors duration-200"
+                        onClick={copyToClipboard}
+                        title="Copy Bio"
+                      >
+                        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    
+                    <div className="text-center mt-4 text-sm text-muted-foreground">
+                      Edit the bio above to perfectly match your voice before copying!
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </main>
+      </motion.main>
       
       <Footer />
     </div>
@@ -170,3 +240,4 @@ const BuildProfile = () => {
 };
 
 export default BuildProfile;
+

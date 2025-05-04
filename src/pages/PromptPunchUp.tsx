@@ -1,24 +1,40 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { Copy, Check, Sparkles, RefreshCw } from "lucide-react";
+import { Copy, Check, Sparkles, RefreshCw, Loader2 } from "lucide-react";
+import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
+import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { analytics } from "@/config/firebase"; // Import analytics
+import { logEvent } from "firebase/analytics"; // Import logEvent
 
-interface PromptResponse {
-  prompt: string;
+interface GeneratePromptsResponse {
   responses: string[];
 }
 
+const functions = getFunctions();
+const generatePromptsCallable = httpsCallable<{
+  prompt: string;
+  tone?: string;
+  culturalContext?: string;
+}, GeneratePromptsResponse>(functions, 'generatePrompts');
+
 const PromptPunchUp = () => {
   const [prompt, setPrompt] = useState("");
+  const [tone, setTone] = useState("witty");
+  const [culturalContext, setCulturalContext] = useState("general");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [results, setResults] = useState<PromptResponse | null>(null);
+  const [editableResponses, setEditableResponses] = useState<string[] | null>(null);
+  const [originalPrompt, setOriginalPrompt] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  
+  const { user } = useAuth();
+
   const examplePrompts = [
     "Two truths and a lie",
     "My perfect weekend",
@@ -26,112 +42,133 @@ const PromptPunchUp = () => {
     "My most controversial opinion",
     "I go crazy for",
   ];
-  
-  const handleSubmit = () => {
+
+  const availableTones = ["witty", "flirty", "sincere", "funny", "thoughtful"];
+  const availableContexts = ["general", "Indian", "American", "British"];
+
+  const callGeneratePromptsFunction = async () => {
+    if (!user) {
+      toast.error("Please sign in to generate responses.");
+      return;
+    }
     if (!prompt.trim()) {
       toast.error("Please enter a prompt");
       return;
     }
-    
-    setIsGenerating(true);
-    
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      // Example responses based on prompt
-      let responses: string[] = [];
-      
-      if (prompt.toLowerCase().includes("weekend")) {
-        responses = [
-          "Convincing my plants I'm chill, burning toast artfully, and dodging spoilers online.",
-          "Hiking until my fitness app thinks I'm lost, followed by ice cream to celebrate being found.",
-          "Mornings with coffee and a book, afternoons with friends, evenings with no alarms set."
-        ];
-      } else if (prompt.toLowerCase().includes("truth") && prompt.toLowerCase().includes("lie")) {
-        responses = [
-          "I once won a karaoke contest with a Celine Dion song, I've eaten pizza in Naples, and I can speak fluent Japanese.",
-          "I've been skydiving twice, I have seven houseplants named after celebrities, and I've never seen Star Wars.",
-          "I was an extra in a Netflix show, I can cook 20+ pasta dishes from memory, and I once swam with sharks."
-        ];
-      } else if (prompt.toLowerCase().includes("heart")) {
-        responses = [
-          "Surprise me with obscure trivia and I'll be yours forever. Bonus points if it's about space or weird animals.",
-          "Good food, bad puns, and remembering the little things I mention in passing.",
-          "Send me song recommendations that match my vibe at 2 AM. I'm always listening."
-        ];
-      } else if (prompt.toLowerCase().includes("opinion") || prompt.toLowerCase().includes("controversial")) {
-        responses = [
-          "Movie theater popcorn is overrated. I bring my own snacks (stealthily, of course).",
-          "Most meetings could be emails, most emails could be texts, and most texts could be ignored.",
-          "I think cilantro tastes amazing and people who think it tastes like soap are missing out."
-        ];
-      } else if (prompt.toLowerCase().includes("crazy")) {
-        responses = [
-          "People who are passionate about literally anything. Tell me about your weird hobby for hours, please.",
-          "The perfect breakfast burrito. I have a map of all the best spots within a 20-mile radius.",
-          "Unexpected adventures. The best stories start with 'this wasn't the plan, but...'"
-        ];
-      } else {
-        // Default responses for any other prompt
-        responses = [
-          `My ${prompt} game is strong enough to make even my mom double-tap.`,
-          `If ${prompt} were an Olympic sport, I'd be bringing home gold. Or at least a participation medal.`,
-          `My approach to ${prompt} is like my coffee: strong, surprising, and keeps you coming back for more.`
-        ];
-      }
-      
-      setResults({ prompt, responses });
-      setIsGenerating(false);
-      toast.success("Responses generated!");
-    }, 2000);
-  };
-  
-  const regenerateResponses = () => {
-    if (!prompt) {
-      toast.error("Please enter a prompt first");
+    if (prompt.length > 200) {
+      toast.error("Prompt text is too long. Please keep it under 200 characters.");
       return;
     }
-    
+
     setIsGenerating(true);
-    
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      // Alternative responses
-      let responses: string[] = [];
-      
-      if (results) {
-        // Generate alternative responses different from the current ones
-        responses = [
-          `When it comes to ${prompt}, I'm basically a professional... if professionals wing it and hope for the best.`,
-          `My ${prompt} philosophy: life's too short for boring answers and bad coffee.`,
-          `I approach ${prompt} like I approach cooking—creative chaos that somehow works out in the end.`
-        ];
+    setEditableResponses(null);
+    setOriginalPrompt(prompt);
+    setCopiedIndex(null);
+
+    try {
+      const result: HttpsCallableResult<GeneratePromptsResponse> = await generatePromptsCallable({
+        prompt: prompt,
+        tone: tone,
+        culturalContext: culturalContext,
+      });
+
+      if (result.data && result.data.responses && result.data.responses.length > 0) {
+        setEditableResponses(result.data.responses);
+        toast.success("Responses generated!");
+        // Log generate_prompts_success event
+        analytics.then(analyticInstance => {
+          if (analyticInstance) {
+            logEvent(analyticInstance, 'generate_prompts_success', { tone, cultural_context: culturalContext });
+          }
+        });
+      } else {
+        throw new Error("Received no responses from the AI.");
       }
-      
-      setResults({ prompt, responses });
+    } catch (error: any) {
+      console.error("Error calling generatePrompts function:", error);
+      toast.error(error.message || "Failed to generate responses. Please try again.");
+      // Log generate_prompts_failure event
+      analytics.then(analyticInstance => {
+        if (analyticInstance) {
+          logEvent(analyticInstance, 'generate_prompts_failure', { 
+            tone, 
+            cultural_context: culturalContext, 
+            error_message: error.message || 'Unknown error' 
+          });
+        }
+      });
+    } finally {
       setIsGenerating(false);
-      toast.success("New responses generated!");
-    }, 2000);
+    }
   };
-  
-  const copyToClipboard = (text: string, index: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    toast.success("Copied to clipboard!");
-    
-    setTimeout(() => {
-      setCopiedIndex(null);
-    }, 2000);
+
+  const handleSubmit = () => {
+    callGeneratePromptsFunction();
+    // Log initial prompt generation attempt
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'generate_prompts_attempt', { tone, cultural_context: culturalContext });
+      }
+    });
   };
-  
+
+  const regenerateResponses = () => {
+    if (!originalPrompt) {
+        toast.error("No prompt was previously generated for.");
+        return;
+    }
+    callGeneratePromptsFunction(); 
+    // Log prompt regeneration attempt
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'regenerate_prompts_attempt', { tone, cultural_context: culturalContext });
+      }
+    });
+  };
+
+  const handleResponseChange = (index: number, value: string) => {
+    if (editableResponses) {
+      const updatedResponses = [...editableResponses];
+      updatedResponses[index] = value;
+      setEditableResponses(updatedResponses);
+    }
+  };
+
+  const copyToClipboard = (index: number) => {
+    if (editableResponses && editableResponses[index]) {
+      navigator.clipboard.writeText(editableResponses[index]);
+      setCopiedIndex(index);
+      toast.success("Copied to clipboard!");
+      setTimeout(() => setCopiedIndex(null), 2000);
+      // Log prompt_response_copied event
+      analytics.then(analyticInstance => {
+        if (analyticInstance) {
+          logEvent(analyticInstance, 'prompt_response_copied', { index });
+        }
+      });
+    }
+  };
+
   const selectExamplePrompt = (example: string) => {
     setPrompt(example);
+    // Log example_prompt_selected event
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'example_prompt_selected', { prompt_text: example });
+      }
+    });
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
-      <main className="flex-1 pt-24 pb-16">
+
+      <motion.main 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex-1 pt-24 pb-16"
+      >
         <div className="container max-w-3xl">
           {/* Header */}
           <div className="text-center mb-12">
@@ -140,13 +177,13 @@ const PromptPunchUp = () => {
               Generate quirky, funny one-liners for your dating app prompts that will make you stand out.
             </p>
           </div>
-          
+
           {/* Input Section */}
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Enter Your Dating App Prompt</CardTitle>
               <CardDescription>
-                Type a prompt like "Two truths and a lie" or "My perfect weekend"
+                Type a prompt (max 200 chars) like "Two truths and a lie" or "My perfect weekend"
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -154,8 +191,11 @@ const PromptPunchUp = () => {
                 placeholder="Enter your prompt..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
+                maxLength={200}
+                disabled={isGenerating}
               />
-              
+
+              {/* Example Prompts */}
               <div className="flex flex-wrap gap-2">
                 <p className="text-sm text-muted-foreground mr-2 pt-1">Examples:</p>
                 {examplePrompts.map((example) => (
@@ -164,83 +204,144 @@ const PromptPunchUp = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => selectExamplePrompt(example)}
-                    className="text-xs"
+                    className="text-xs hover:bg-secondary/50 transition-colors duration-200"
+                    disabled={isGenerating}
                   >
                     {example}
                   </Button>
                 ))}
               </div>
-              
-              <Button 
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+
+              {/* Tone and Context Selectors */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="tone-select" className="text-sm font-medium">Tone</label>
+                  <Select value={tone} onValueChange={setTone} disabled={isGenerating}>
+                    <SelectTrigger id="tone-select">
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTones.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label htmlFor="context-select" className="text-sm font-medium">Cultural Context</label>
+                  <Select value={culturalContext} onValueChange={setCulturalContext} disabled={isGenerating}>
+                    <SelectTrigger id="context-select">
+                      <SelectValue placeholder="Select context" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableContexts.map(c => <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200"
                 onClick={handleSubmit}
-                disabled={isGenerating}
+                disabled={isGenerating || !prompt.trim() || !user}
               >
-                <Sparkles className="mr-2 h-4 w-4" />
-                {isGenerating ? "Generating..." : "Generate Responses"}
+                {isGenerating ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Sparkles className="mr-2 h-4 w-4" /> Generate Responses</>
+                )}
               </Button>
             </CardContent>
           </Card>
-          
-          {/* Results Section */}
-          {results && (
-            <Card className="border-primary/50">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Your Punched-Up Responses</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={regenerateResponses}
-                    disabled={isGenerating}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                    <span className="ml-2">Refresh</span>
-                  </Button>
-                </div>
-                <CardDescription>
-                  For prompt: "{results.prompt}"
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {results.responses.map((response, index) => (
-                    <div key={index} className="bg-secondary/20 p-4 rounded-lg border border-secondary/30 relative">
-                      <p className="pr-10">{response}</p>
+
+          {/* Results Section with Animation */}
+          <AnimatePresence>
+            {isGenerating && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-center p-8"
+              >
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                <p className="text-muted-foreground">Generating responses...</p>
+              </motion.div>
+            )}
+            {editableResponses && !isGenerating && (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="border-primary/50">
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Your Punched-Up Responses</CardTitle>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="absolute top-3 right-3"
-                        onClick={() => copyToClipboard(response, index)}
+                        onClick={regenerateResponses}
+                        disabled={isGenerating || !originalPrompt || !user}
+                        title="Regenerate Responses"
+                        className="hover:bg-secondary/50 transition-colors duration-200"
                       >
-                        {copiedIndex === index ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
+                        <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                        <span className="ml-2">Refresh</span>
                       </Button>
                     </div>
-                  ))}
-                </div>
-                
-                <div className="mt-6 bg-muted/30 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">Pro Tips:</h3>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>Personalize these responses to match your authentic voice</li>
-                    <li>Choose the response that feels most natural to you</li>
-                    <li>Specific details make your profile more memorable</li>
-                    <li>Humor works best when it reflects your actual personality</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                    <CardDescription>
+                      For prompt: "{originalPrompt}" (Tone: {tone}, Context: {culturalContext}). Edit below before copying.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {editableResponses.map((response, index) => (
+                        <div key={index} className="bg-secondary/20 p-4 rounded-lg border border-secondary/30 relative">
+                          <Textarea
+                            value={response}
+                            onChange={(e) => handleResponseChange(index, e.target.value)}
+                            className="w-full min-h-[60px] resize-none border-0 bg-transparent focus:ring-0 p-0 pr-10"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 hover:bg-secondary/50 transition-colors duration-200"
+                            onClick={() => copyToClipboard(index)}
+                            title="Copy Response"
+                          >
+                            {copiedIndex === index ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-6 bg-muted/30 p-4 rounded-lg border">
+                      <h3 className="font-semibold mb-2">Pro Tips:</h3>
+                      <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
+                        <li>Personalize these responses to match your authentic voice</li>
+                        <li>Choose the response that feels most natural to you</li>
+                        <li>Specific details make your profile more memorable</li>
+                        <li>Humor works best when it reflects your actual personality</li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </main>
-      
+      </motion.main>
+
       <Footer />
     </div>
   );
 };
 
 export default PromptPunchUp;
+

@@ -1,81 +1,134 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress"; // Added missing import
 import ImageUploader from "@/components/ImageUploader";
-import ConversationStarter from "@/components/ConversationStarter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { MessageCircle, ThumbsUp, Lightbulb } from "lucide-react";
+import { MessageCircle, Loader2, Copy, Check } from "lucide-react";
+import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
+import { useAuth } from "@/contexts/AuthContext";
+import { analytics } from "@/config/firebase"; // Import analytics
+import { logEvent } from "firebase/analytics"; // Import logEvent
 
-interface ProfileSummary {
-  vibe: string;
-  swipeAppeal: number;
-  standoutPoints: string[];
+interface GenerateStartersResponse {
+  starters: string[];
 }
 
-interface StarterMessage {
-  type: "playful" | "sincere" | "specific";
-  message: string;
-}
+const functions = getFunctions();
+const generateConversationStartersCallable = httpsCallable<
+  { imageBase64: string }, 
+  GenerateStartersResponse
+>(functions, 'generateConversationStarters');
 
-const sampleProfileSummary: ProfileSummary = {
-  vibe: "Wave-riding taco enthusiast with an adventurous spirit.",
-  swipeAppeal: 7,
-  standoutPoints: ["Surfing passion", "Foodie (tacos)", "Outdoor activities"]
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
 };
-
-const sampleMessages: StarterMessage[] = [
-  {
-    type: "playful",
-    message: "Surf's up—tacos later? I know a place that would make a wave-rider like you approve."
-  },
-  {
-    type: "sincere",
-    message: "Your surf vibe really caught my attention. What's your favorite spot to catch waves?"
-  },
-  {
-    type: "specific",
-    message: "I noticed you're into tacos and surfing - have you tried the food trucks at Sunset Beach? Perfect post-surf meal!"
-  }
-];
 
 const ConversationStarters = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [profileSummary, setProfileSummary] = useState<ProfileSummary | null>(null);
-  const [starterMessages, setStarterMessages] = useState<StarterMessage[] | null>(null);
-  
+  const [starterMessages, setStarterMessages] = useState<string[] | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const { user } = useAuth();
+
   const handleImageUpload = (uploadedFile: File) => {
-    setFile(uploadedFile);
-    setProfileSummary(null);
-    setStarterMessages(null);
-  };
-  
-  const generateStarters = () => {
-    if (!file) {
-      toast.error("Please upload a screenshot of your crush's profile");
+    if (!uploadedFile.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file (JPEG, PNG, WEBP, GIF).");
+      setFile(null);
       return;
     }
+    if (uploadedFile.size > 5 * 1024 * 1024) {
+        toast.error("Image file is too large. Please upload an image under 5MB.");
+        setFile(null);
+        return;
+    }
     
+    setFile(uploadedFile);
+    setStarterMessages(null);
+    // Log image_uploaded event
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'image_uploaded', { feature: 'conversation_starters', file_type: uploadedFile.type, file_size: uploadedFile.size });
+      }
+    });
+  };
+
+  const callGenerateStartersFunction = async () => {
+    if (!user) {
+      toast.error("Please sign in to generate conversation starters.");
+      return;
+    }
+    if (!file) {
+      toast.error("Please upload a screenshot of the profile.");
+      return;
+    }
+
     setIsGenerating(true);
-    
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      setProfileSummary(sampleProfileSummary);
-      setStarterMessages(sampleMessages);
+    setStarterMessages(null);
+    setCopiedIndex(null);
+    // Log generate_starters_attempt event
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'generate_starters_attempt');
+      }
+    });
+
+    try {
+      const imageBase64 = await fileToBase64(file);
+      const result: HttpsCallableResult<GenerateStartersResponse> = await generateConversationStartersCallable({ imageBase64 });
+
+      if (result.data && result.data.starters && result.data.starters.length > 0) {
+        setStarterMessages(result.data.starters);
+        toast.success("Conversation starters generated!");
+        // Log generate_starters_success event
+        analytics.then(analyticInstance => {
+          if (analyticInstance) {
+            logEvent(analyticInstance, 'generate_starters_success');
+          }
+        });
+      } else {
+        throw new Error("Received no conversation starters from the AI.");
+      }
+    } catch (error: any) {
+      console.error("Error calling generateConversationStarters function:", error);
+      toast.error(error.message || "Failed to generate starters. Please try again.");
+      // Log generate_starters_failure event
+      analytics.then(analyticInstance => {
+        if (analyticInstance) {
+          logEvent(analyticInstance, 'generate_starters_failure', { error_message: error.message || 'Unknown error' });
+        }
+      });
+    } finally {
       setIsGenerating(false);
-      toast.success("Conversation starters generated!");
-    }, 3000);
+    }
   };
   
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    toast.success("Copied to clipboard!");
+    // Log starter_copied event
+    analytics.then(analyticInstance => {
+      if (analyticInstance) {
+        logEvent(analyticInstance, 'starter_copied', { feature: 'conversation_starters', index });
+      }
+    });
+
+    setTimeout(() => {
+      setCopiedIndex(null);
+    }, 2000);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-4xl">
           {/* Header */}
@@ -85,16 +138,16 @@ const ConversationStarters = () => {
               Upload a screenshot of their dating profile and get personalized conversation starters to help you break the ice.
             </p>
           </div>
-          
+
           {/* Upload Section */}
           <Card className="mb-12">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MessageCircle className="mr-2 h-5 w-5 text-primary" />
-                Upload Their Profile
+                Upload Their Profile Screenshot
               </CardTitle>
               <CardDescription>
-                Share a screenshot of the profile you're interested in
+                Share a screenshot (JPEG, PNG, WEBP, GIF, max 5MB) of the profile you're interested in.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -102,110 +155,65 @@ const ConversationStarters = () => {
                 onImageUpload={handleImageUpload}
                 title="Upload Profile Screenshot"
                 description="Make sure the bio and prompts are clearly visible"
+                acceptedFileTypes="image/jpeg, image/png, image/webp, image/gif"
               />
-              
-              <Button 
+
+              <Button
                 className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={generateStarters} 
-                disabled={!file || isGenerating}
+                onClick={callGenerateStartersFunction}
+                disabled={!file || isGenerating || !user}
               >
-                {isGenerating ? "Generating Ideas..." : "Generate Conversation Starters"}
+                {isGenerating ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating Ideas...</>
+                ) : (
+                  "Generate Conversation Starters"
+                )}
               </Button>
             </CardContent>
           </Card>
-          
+
           {/* Results Section */}
           {isGenerating ? (
-            <div className="space-y-6">
-              <div className="animate-pulse bg-muted h-48 rounded-lg w-full"></div>
-              <div className="space-y-4">
-                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
-                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
-                <div className="animate-pulse bg-muted h-24 rounded-lg w-full"></div>
-              </div>
-            </div>
-          ) : profileSummary && starterMessages ? (
+            <div className="h-64 flex items-center justify-center bg-muted/30 rounded-xl border border-dashed p-8 text-center">
+               <div>
+                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4 mx-auto" />
+                 <h3 className="text-lg font-medium mb-2">Generating starters...</h3>
+                 <p className="text-muted-foreground">
+                   This might take a moment.
+                 </p>
+               </div>
+             </div>
+          ) : starterMessages ? (
             <>
-              <Card className="mb-8">
-                <CardHeader>
-                  <CardTitle>Profile Summary</CardTitle>
-                  <CardDescription>
-                    Based on the text in their profile
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-2">OVERALL VIBE</h3>
-                      <p className="text-lg">{profileSummary.vibe}</p>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-2">SWIPE APPEAL</h3>
-                      <div className="flex items-center gap-4">
-                        <Progress value={profileSummary.swipeAppeal * 10} className="h-2 w-48" />
-                        <span className="font-bold">{profileSummary.swipeAppeal}/10</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-2">WHAT STANDS OUT</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {profileSummary.standoutPoints.map((point, index) => (
-                          <Badge key={index} variant="secondary" className="font-normal">
-                            {point}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
               <h2 className="text-2xl font-bold mb-6">Your Conversation Starters</h2>
               <div className="space-y-4">
                 {starterMessages.map((starter, index) => (
                   <Card key={index} className="overflow-hidden">
-                    <div className="bg-gradient-to-r from-secondary/30 to-secondary/10 py-2 px-4 border-b">
-                      <div className="flex items-center">
-                        {starter.type === "playful" && (
-                          <>
-                            <ThumbsUp className="h-4 w-4 mr-2 text-accent" />
-                            <span className="font-medium">Playful Opener</span>
-                          </>
-                        )}
-                        {starter.type === "sincere" && (
-                          <>
-                            <MessageCircle className="h-4 w-4 mr-2 text-primary" />
-                            <span className="font-medium">Sincere Approach</span>
-                          </>
-                        )}
-                        {starter.type === "specific" && (
-                          <>
-                            <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
-                            <span className="font-medium">Detail-Specific Message</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
                     <CardContent className="py-4">
-                      <div className="flex justify-between">
-                        <p>{starter.message}</p>
-                        <Button variant="ghost" size="sm" className="ml-2" onClick={() => {
-                          navigator.clipboard.writeText(starter.message);
-                          toast.success("Copied to clipboard!");
-                        }}>
-                          Copy
+                      <div className="flex justify-between items-start">
+                        <p className="pr-10">{starter}</p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 flex-shrink-0"
+                          onClick={() => copyToClipboard(starter, index)}
+                          title="Copy Starter"
+                        >
+                          {copiedIndex === index ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-              
+
               <div className="mt-8 bg-muted/30 rounded-lg p-4 border">
                 <h3 className="font-medium mb-2">Pro Tips:</h3>
-                <ul className="list-disc pl-5 space-y-2">
+                <ul className="list-disc pl-5 space-y-2 text-sm">
                   <li>Personalize these starters further by adding your own voice</li>
                   <li>Choose the message style that feels most natural to you</li>
                   <li>Ask follow-up questions to keep the conversation flowing</li>
@@ -218,17 +226,18 @@ const ConversationStarters = () => {
               <div>
                 <h3 className="text-lg font-medium mb-2">Your conversation starters will appear here</h3>
                 <p className="text-muted-foreground">
-                  Upload a screenshot and click "Generate Conversation Starters" to get started
+                  Upload a screenshot and click "Generate Conversation Starters" to get started.
                 </p>
               </div>
             </div>
           )}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
 };
 
 export default ConversationStarters;
+

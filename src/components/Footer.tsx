@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="border-t bg-background py-8">
+    <footer className="border-t bg-background py-8 mt-16"> {/* Added mt-16 for spacing */}
       <div className="container">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
@@ -27,7 +27,16 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-8 text-center text-sm text-foreground/60">
+        {/* AI Disclaimer Added */}
+        <div className="mt-6 pt-6 border-t border-border/50 text-center text-xs text-foreground/50">
+          <p className="mb-1">AI-Powered Suggestions Disclaimer:</p>
+          <p>
+            DateSpark uses AI to generate suggestions for your dating profile and messages. These are intended as inspiration and recommendations only. 
+            Results are not guaranteed, and success depends on many factors. Always use your own judgment and ensure your profile reflects your authentic self.
+          </p>
+        </div>
+        
+        <div className="mt-4 text-center text-sm text-foreground/60">
           © {new Date().getFullYear()} DateSpark. All rights reserved.
         </div>
       </div>
@@ -36,3 +45,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
