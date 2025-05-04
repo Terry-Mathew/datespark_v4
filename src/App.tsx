@@ -12,7 +12,7 @@ import FeedbackWidget from "@/components/FeedbackWidget";
 import SignIn from "./pages/SignIn"; 
 import SignUp from "./pages/SignUp"; 
 // Import the new pages
-import AboutUs from "./pages/AboutUs";
+import AboutUs from "./pages/AboutUsPage";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";

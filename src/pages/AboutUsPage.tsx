@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const AboutUs = () => {
+const AboutUsPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -41,5 +41,5 @@ const AboutUs = () => {
   );
 };
 
-export default AboutUs;
+export default AboutUsPage;
 
