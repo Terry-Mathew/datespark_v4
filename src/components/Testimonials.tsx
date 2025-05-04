@@ -9,13 +9,13 @@ import OptimizedImage from "@/components/ui/optimized-image";
 const testimonials = [
   {
     name: "Alex M.",
-    location: "Mumbai",
+    location: "New York, NY", // Updated location
     // image: "https://ui-avatars.com/api/?name=Alex+M&background=random", // Removed image
     text: "DateSpark transformed my dating life! I saw **immediate results**—my **matches increased by 300%** in the first week. The AI-powered suggestions were spot-on!",
     initials: "AM"
   },
   {
-    name: "Priya S.",
+    name: "Akhil S.",
     location: "Bangalore",
     // image: "https://ui-avatars.com/api/?name=Priya+S&background=random", // Removed image
     text: "The **profile analysis feature** was eye-opening. Got **more quality matches** in a day than I did in months! The conversation starters are pure gold.",
@@ -29,21 +29,21 @@ const testimonials = [
     initials: "RK"
   },
   {
-    name: "Sarah L.",
+    name: "Sara L.",
     location: "Chennai",
     // image: "https://ui-avatars.com/api/?name=Sarah+L&background=random", // Removed image
     text: "As someone older, I felt out of touch with dating apps. DateSpark's **analysis helped me update my photos and bio** effectively.",
     initials: "SL"
   },
   {
-    name: "David R.",
+    name: "Naveen R.",
     location: "Hyderabad",
     // image: "https://ui-avatars.com/api/?name=David+R&background=random", // Removed image
     text: "The **conversation starters are gold**! I never know what to say first, but DateSpark gave me great ideas based on her profile.",
     initials: "DR"
   },
   {
-    name: "Chloe T.",
+    name: "Praveen S.",
     location: "Pune",
     // image: "https://ui-avatars.com/api/?name=Chloe+T&background=random", // Removed image
     text: "Finally getting **quality matches**! The AI feedback was honest but helpful. Highly recommend for anyone serious about online dating.",

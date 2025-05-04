@@ -1,30 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-// Remove the duplicate FeatureCard definition
-// import FeatureCard from "@/components/FeatureCard"; // Use the imported FeatureCard
 import FeatureCard from "@/components/FeatureCard"; // Import the actual component
-// Remove TestimonialCard import if Testimonials component is used
-// import TestimonialCard from "@/components/TestimonialCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-// Import the Testimonials component
 import Testimonials from "@/components/Testimonials"; 
-import { Upload, MessageCircle, Camera, Heart, Sparkles, Users, Edit, Zap, MessageSquare, Star, PenLine } from "lucide-react";
+import { Camera, Heart, Sparkles, Users, Zap, MessageSquare, Star, PenLine } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
-
-// Remove the duplicate FeatureCard definition from here
-/*
-const FeatureCard = ({ icon: Icon, title, description, className }: {
-  icon: any;
-  title: string;
-  description: string;
-  className?: string;
-}) => (
-  // ... implementation ...
-);
-*/
 
 const ProcessCard = ({ 
   icon: Icon, 
@@ -41,7 +24,7 @@ const ProcessCard = ({
     <div className={`flex items-start gap-6 ${iconPosition === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
       <div className="flex-shrink-0">
         <div className="p-4 rounded-xl bg-white shadow-sm border border-gray-100">
-          <Icon className="h-8 w-8 text-primary" /> {/* Increased icon size by 20% */}
+          <Icon className="h-8 w-8 text-primary" />
         </div>
       </div>
       <div className={`flex-1 ${iconPosition === 'right' ? 'text-right' : 'text-left'}`}>
@@ -83,9 +66,9 @@ const Index = () => {
               
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4 mb-8 md:mb-16">
-                {/* Primary CTA */}
+                {/* Primary CTA - Reverted */}
                 <div className="w-full sm:w-auto">
-                  <Link to="/profile-analysis" className="block">
+                  <Link to="/profile-analysis" className="block"> {/* Link to Profile Analysis */}
                     <Button
                       size="lg"
                       className="w-full sm:w-auto px-6 py-6 text-base md:text-lg bg-secondary 
@@ -93,7 +76,7 @@ const Index = () => {
                       hover:shadow-secondary/30 transform hover:-translate-y-0.5 
                       transition-all duration-300"
                     >
-                      <Camera className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6" />
+                      <Camera className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6" /> {/* Reverted Icon */}
                       Analyze My Photos
                     </Button>
                   </Link>
@@ -115,34 +98,26 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Trust Badge */}
+              {/* Trust Badge - Updated Text */}
               <div className="flex justify-center px-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full 
                 bg-background border border-muted-foreground/20 shadow-sm text-sm">
                   <svg className="h-4 w-4 md:h-5 md:w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm md:text-base font-medium">Free Analysis • No Credit Card Required</span>
+                  <span className="text-sm md:text-base font-medium">AI Features • Get Started Free</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Feature Cards Grid - Updated to 4 columns */}
+        {/* Feature Cards Grid - Updated to 3 columns */}
         <section className="py-12 md:py-20">
           <div className="container px-4 md:px-6">
-            {/* Make this a 4-column grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              {/* Add Profile Analysis Card */}
-              <Link to="/profile-analysis">
-                <FeatureCard
-                  icon={Camera} 
-                  title="Profile Analysis"
-                  description="Get AI-powered feedback on your photos to improve your profile's appeal."
-                  className="cursor-pointer"
-                />
-              </Link>
+            {/* Make this a 3-column grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {/* Removed Profile Analysis Card */}
               
               <Link to="/build-profile">
                 <FeatureCard
@@ -282,13 +257,7 @@ const Index = () => {
         {/* Render the Testimonials component here */}
         <Testimonials />
         
-        {/* Remove the old hardcoded testimonial section 
-        <section className="py-20 mt-10 bg-[#FDF8F3]">
-          // ... old code ...
-        </section>
-        */}
-        
-        {/* Updated Section */}
+        {/* Final CTA Section - Updated Button Color */}
         <section className="py-12 md:py-20 bg-gray-50 border-t border-gray-200">
           <div className="container px-4 md:px-6 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -297,10 +266,10 @@ const Index = () => {
             <p className="text-lg text-muted-foreground mb-8">
               Join thousands of people who are finding better matches and making meaningful connections with DateSpark.
             </p>
-            <Link to="/get-started" className="block">
+            <Link to="/signup" className="block"> {/* Link to signup */}
               <Button
                 size="lg"
-                className="bg-red-600 text-white hover:bg-red-700 transition-all duration-300"
+                className="bg-secondary text-white hover:bg-[#D93D66] transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-secondary/30 transform hover:-translate-y-0.5"
               >
                 Get Started
               </Button>

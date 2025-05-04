@@ -12,7 +12,7 @@ import FeedbackWidget from "@/components/FeedbackWidget";
 import SignIn from "./pages/SignIn"; 
 import SignUp from "./pages/SignUp"; 
 // Import the new pages
-import AboutUs from "./pages/AboutUsPage";
+import AboutUs from "./pages/AboutUsPage"; // Corrected import path
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -25,8 +25,8 @@ const App = () => (
     <TooltipProvider>
       <Routes>
         <Route path="/" element={<Index />} />
-        {/* Remove ProfileAnalysis route if feature is fully removed */}
-        {/* <Route path="/profile-analysis" element={<ProfileAnalysis />} /> */}
+        {/* Restore ProfileAnalysis route */}
+        <Route path="/profile-analysis" element={<ProfileAnalysis />} /> 
         <Route path="/conversation-starters" element={<ConversationStarters />} />
         <Route path="/build-profile" element={<BuildProfile />} />
         <Route path="/prompt-punch-up" element={<PromptPunchUp />} />

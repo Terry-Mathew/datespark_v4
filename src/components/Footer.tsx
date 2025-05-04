@@ -14,7 +14,6 @@ const Footer = () => {
           
           {/* Essential Links */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            {/* Placeholder links - update these with actual routes */}
             <Link to="/about" className="text-foreground/80 hover:text-foreground transition-colors">
               About Us
             </Link>
@@ -43,7 +42,8 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* AI Disclaimer */}
+        {/* AI Disclaimer - REMOVED */}
+        {/* 
         <div className="mt-8 pt-6 border-t border-border/50 text-center text-xs text-foreground/50">
           <p className="mb-1">AI-Powered Suggestions Disclaimer:</p>
           <p>
@@ -51,9 +51,10 @@ const Footer = () => {
             Results are not guaranteed, and success depends on many factors. Always use your own judgment and ensure your profile reflects your authentic self.
           </p>
         </div>
+        */}
         
         {/* Copyright */}
-        <div className="mt-6 text-center text-xs text-foreground/60">
+        <div className="mt-8 pt-6 border-t border-border/50 text-center text-xs text-foreground/60">
           © {new Date().getFullYear()} DateSpark. All rights reserved.
         </div>
       </div>
