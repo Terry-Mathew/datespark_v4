@@ -1,15 +1,24 @@
 {
   "name": "functions",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "echo \"Lint script placeholder - skipping\"",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/functions-framework": "^4.0.0",
+    "@google/generative-ai": "^0.24.1",
     "firebase-admin": "^13.3.0",
     "firebase-functions": "^6.3.2",
     "openai": "^4.97.0",

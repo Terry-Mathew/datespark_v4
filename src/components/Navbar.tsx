@@ -63,10 +63,18 @@ const Navbar = () => {
     } else {
       return (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => navigate("/signin")}>
+          {/* Updated Sign In Button: Added hover:text-primary */}
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/signin")} 
+            className="text-foreground/80 hover:text-primary transition-colors"
+          >
             Sign In
           </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/signup")}>
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => navigate("/signup")}
+          >
             Sign Up
           </Button>
         </div>
@@ -119,8 +127,8 @@ const Navbar = () => {
           </Button>
         </div>
         
-        {/* Desktop navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* Desktop navigation - Increased gap to gap-8 for more spacing */}
+        <nav className="hidden md:flex items-center gap-8">
           <Link to="/" className="text-foreground/80 hover:text-foreground transition-colors">
             Home
           </Link>
@@ -162,3 +170,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
