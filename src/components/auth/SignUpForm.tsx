@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { analytics } from "@/config/firebase"; // Import analytics
-import { logEvent } from "firebase/analytics"; // Import logEvent
 
 const SignUpForm = () => {
   const [email, setEmail] = useState("");
@@ -27,11 +26,7 @@ const SignUpForm = () => {
     try {
       await signUp(email, password, name);
       // Log sign_up event on successful sign up
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'sign_up', { method: 'email' }); // Log sign_up event
-        }
-      });
+      analytics.logEvent('sign_up', { method: 'email' });
       // Navigation is handled within the signUp function in AuthContext upon success
     } catch (error) {
       // Error handling is done within the signUp function in AuthContext, displaying a toast

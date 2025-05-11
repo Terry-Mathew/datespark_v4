@@ -6,10 +6,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { MessageCircle, Loader2, Copy, Check } from "lucide-react";
-import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
+import { httpsCallable, HttpsCallableResult } from "firebase/functions";
 import { useAuth } from "@/contexts/AuthContext";
-import { analytics } from "@/config/firebase"; // Import analytics
-import { logEvent } from "firebase/analytics"; // Import logEvent
+import { analytics, getFunctions } from "@/config/firebase"; // Import analytics and custom getFunctions
 
 interface GenerateStartersResponse {
   starters: string[];
@@ -37,7 +36,16 @@ const ConversationStarters = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { user } = useAuth();
 
-  const handleImageUpload = (uploadedFile: File) => {
+  const handleImageUpload = (uploadedFiles: File[] | null) => {
+    if (!uploadedFiles || uploadedFiles.length === 0) {
+      setFile(null);
+      setStarterMessages(null);
+      return;
+    }
+
+    // Get the first file from the list
+    const uploadedFile = uploadedFiles[0];
+    
     if (!uploadedFile.type.startsWith("image/")) {
       toast.error("Please upload a valid image file (JPEG, PNG, WEBP, GIF).");
       setFile(null);
@@ -52,10 +60,10 @@ const ConversationStarters = () => {
     setFile(uploadedFile);
     setStarterMessages(null);
     // Log image_uploaded event
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'image_uploaded', { feature: 'conversation_starters', file_type: uploadedFile.type, file_size: uploadedFile.size });
-      }
+    analytics.logEvent('image_uploaded', { 
+      feature: 'conversation_starters', 
+      file_type: uploadedFile.type, 
+      file_size: uploadedFile.size 
     });
   };
 
@@ -73,11 +81,7 @@ const ConversationStarters = () => {
     setStarterMessages(null);
     setCopiedIndex(null);
     // Log generate_starters_attempt event
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'generate_starters_attempt');
-      }
-    });
+    analytics.logEvent('generate_starters_attempt', {});
 
     try {
       const imageBase64 = await fileToBase64(file);
@@ -87,22 +91,17 @@ const ConversationStarters = () => {
         setStarterMessages(result.data.starters);
         toast.success("Conversation starters generated!");
         // Log generate_starters_success event
-        analytics.then(analyticInstance => {
-          if (analyticInstance) {
-            logEvent(analyticInstance, 'generate_starters_success');
-          }
-        });
+        analytics.logEvent('generate_starters_success', {});
       } else {
         throw new Error("Received no conversation starters from the AI.");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error calling generateConversationStarters function:", error);
-      toast.error(error.message || "Failed to generate starters. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(errorMessage || "Failed to generate starters. Please try again.");
       // Log generate_starters_failure event
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'generate_starters_failure', { error_message: error.message || 'Unknown error' });
-        }
+      analytics.logEvent('generate_starters_failure', { 
+        error_message: errorMessage || 'Unknown error' 
       });
     } finally {
       setIsGenerating(false);
@@ -114,10 +113,9 @@ const ConversationStarters = () => {
     setCopiedIndex(index);
     toast.success("Copied to clipboard!");
     // Log starter_copied event
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'starter_copied', { feature: 'conversation_starters', index });
-      }
+    analytics.logEvent('starter_copied', { 
+      feature: 'conversation_starters', 
+      index 
     });
 
     setTimeout(() => {
@@ -155,7 +153,7 @@ const ConversationStarters = () => {
                 onImageUpload={handleImageUpload}
                 title="Upload Profile Screenshot"
                 description="Make sure the bio and prompts are clearly visible"
-                acceptedFileTypes="image/jpeg, image/png, image/webp, image/gif"
+                acceptedTypes="image/jpeg, image/png, image/webp, image/gif"
               />
 
               <Button

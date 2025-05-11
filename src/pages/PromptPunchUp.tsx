@@ -8,11 +8,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { Copy, Check, Sparkles, RefreshCw, Loader2 } from "lucide-react";
-import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
+import { httpsCallable, HttpsCallableResult } from "firebase/functions";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { analytics } from "@/config/firebase"; // Import analytics
-import { logEvent } from "firebase/analytics"; // Import logEvent
+import { analytics, getFunctions } from "@/config/firebase"; // Import analytics and custom getFunctions
 
 interface GeneratePromptsResponse {
   responses: string[];
@@ -76,26 +75,22 @@ const PromptPunchUp = () => {
         setEditableResponses(result.data.responses);
         toast.success("Responses generated!");
         // Log generate_prompts_success event
-        analytics.then(analyticInstance => {
-          if (analyticInstance) {
-            logEvent(analyticInstance, 'generate_prompts_success', { tone, cultural_context: culturalContext });
-          }
+        analytics.logEvent('generate_prompts_success', { 
+          tone, 
+          cultural_context: culturalContext 
         });
       } else {
         throw new Error("Received no responses from the AI.");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error calling generatePrompts function:", error);
-      toast.error(error.message || "Failed to generate responses. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(errorMessage || "Failed to generate responses. Please try again.");
       // Log generate_prompts_failure event
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'generate_prompts_failure', { 
-            tone, 
-            cultural_context: culturalContext, 
-            error_message: error.message || 'Unknown error' 
-          });
-        }
+      analytics.logEvent('generate_prompts_failure', { 
+        tone, 
+        cultural_context: culturalContext, 
+        error_message: errorMessage || 'Unknown error' 
       });
     } finally {
       setIsGenerating(false);
@@ -105,10 +100,9 @@ const PromptPunchUp = () => {
   const handleSubmit = () => {
     callGeneratePromptsFunction();
     // Log initial prompt generation attempt
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'generate_prompts_attempt', { tone, cultural_context: culturalContext });
-      }
+    analytics.logEvent('generate_prompts_attempt', { 
+      tone, 
+      cultural_context: culturalContext 
     });
   };
 
@@ -119,10 +113,9 @@ const PromptPunchUp = () => {
     }
     callGeneratePromptsFunction(); 
     // Log prompt regeneration attempt
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'regenerate_prompts_attempt', { tone, cultural_context: culturalContext });
-      }
+    analytics.logEvent('regenerate_prompts_attempt', { 
+      tone, 
+      cultural_context: culturalContext 
     });
   };
 
@@ -141,22 +134,14 @@ const PromptPunchUp = () => {
       toast.success("Copied to clipboard!");
       setTimeout(() => setCopiedIndex(null), 2000);
       // Log prompt_response_copied event
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'prompt_response_copied', { index });
-        }
-      });
+      analytics.logEvent('prompt_response_copied', { index });
     }
   };
 
   const selectExamplePrompt = (example: string) => {
     setPrompt(example);
     // Log example_prompt_selected event
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'example_prompt_selected', { prompt_text: example });
-      }
-    });
+    analytics.logEvent('example_prompt_selected', { prompt_text: example });
   };
 
   return (

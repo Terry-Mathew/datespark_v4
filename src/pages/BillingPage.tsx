@@ -5,9 +5,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { CreditCard, Loader2, CheckCircle } from "lucide-react";
-import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
+import { httpsCallable, HttpsCallableResult } from "firebase/functions";
 import { useAuth } from "@/contexts/AuthContext";
-import { analytics } from "@/config/firebase";
+import { analytics, getFunctions } from "@/config/firebase";
 import { logEvent } from "firebase/analytics";
 import { doc, onSnapshot, getFirestore } from "firebase/firestore";
 
@@ -56,6 +56,9 @@ const BillingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [planId, setPlanId] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<{ amountInPaise: number; name: string } | null>(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   // --- Load Razorpay Script --- 
   // Best practice: Load external scripts dynamically
@@ -99,6 +102,45 @@ const BillingPage = () => {
       setIsLoadingStatus(false);
     }
   }, [user]);
+
+  // Change the payment plan
+  const handlePlanChange = (planIdParam: string) => {
+    setPlanId(planIdParam);
+
+    // Log plan_selected event
+    analytics.logEvent('plan_selected', {
+      plan_id: planIdParam
+    });
+  };
+
+  const createOrderAndInitPayment = async () => {
+    // User must be logged in
+    if (!user) {
+      toast.error("Please sign in to subscribe");
+      return;
+    }
+
+    try {
+      setIsCreatingOrder(true);
+      
+      // Log payment_initiated event
+      analytics.logEvent('payment_initiated', {
+        plan_id: planId
+      });
+
+      // ... rest of the code ...
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      setIsCreatingOrder(false);
+      toast.error(error.message || "Failed to initiate payment");
+      
+      // Log payment_error event
+      analytics.logEvent('payment_error', {
+        plan_id: planId,
+        error_message: error.message || "Unknown error"
+      });
+    }
+  };
 
   const handlePayment = async () => {
     if (!user) {

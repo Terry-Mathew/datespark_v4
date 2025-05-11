@@ -6,11 +6,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { Heart, RefreshCw, Copy, Check, Loader2 } from "lucide-react";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { analytics } from "@/config/firebase"; // Import analytics
-import { logEvent } from "firebase/analytics"; // Import logEvent
+import { analytics, getFunctions } from "@/config/firebase"; // Import analytics and custom getFunctions
 
 const functions = getFunctions();
 const generateBioCallable = httpsCallable(functions, 'generateBio');
@@ -51,22 +50,17 @@ const BuildProfile = () => {
         setEditableBio(data.bio);
         toast.success("Bio generated successfully!");
         // Log generate_bio_success event
-        analytics.then(analyticInstance => {
-          if (analyticInstance) {
-            logEvent(analyticInstance, 'generate_bio_success');
-          }
-        });
+        analytics.logEvent('generate_bio_success', {});
       } else {
         throw new Error("Received an unexpected response from the AI.");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error calling generateBio function:", error);
-      toast.error(error.message || "Failed to generate bio. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(errorMessage || "Failed to generate bio. Please try again.");
       // Log generate_bio_failure event
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'generate_bio_failure', { error_message: error.message || 'Unknown error' });
-        }
+      analytics.logEvent('generate_bio_failure', { 
+        error_message: errorMessage || 'Unknown error' 
       });
     } finally {
       setIsGenerating(false);
@@ -76,21 +70,13 @@ const BuildProfile = () => {
   const handleSubmit = () => {
     callGenerateBioFunction();
     // Log initial bio generation attempt
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'generate_bio_attempt');
-      }
-    });
+    analytics.logEvent('generate_bio_attempt', {});
   };
 
   const regenerateBio = () => {
     callGenerateBioFunction();
     // Log bio regeneration attempt
-    analytics.then(analyticInstance => {
-      if (analyticInstance) {
-        logEvent(analyticInstance, 'regenerate_bio_attempt');
-      }
-    });
+    analytics.logEvent('regenerate_bio_attempt', {});
   };
 
   const copyToClipboard = () => {
@@ -100,11 +86,7 @@ const BuildProfile = () => {
       toast.success("Bio copied to clipboard!");
       setTimeout(() => setCopied(false), 2000); 
       // Log bio_copied event
-      analytics.then(analyticInstance => {
-        if (analyticInstance) {
-          logEvent(analyticInstance, 'bio_copied', { feature: 'build_profile' });
-        }
-      });
+      analytics.logEvent('bio_copied', { feature: 'build_profile' });
     }
   };
 

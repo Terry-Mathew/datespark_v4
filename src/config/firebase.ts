@@ -2,6 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getApp } from "firebase/app";
+import { getFunctions as getOriginalFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 // Your web app's Firebase configuration
 // IMPORTANT: Replace these with your actual Firebase project configuration values
@@ -35,16 +37,71 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Initialize Analytics and export (check for support)
-let analytics: any = null; // Use 'any' or proper type if available
-isSupported().then((yes) => {
-  if (yes) {
-    analytics = getAnalytics(app);
-    console.log("Firebase Analytics initialized.");
-  } else {
-    console.log("Firebase Analytics is not supported in this environment.");
-  }
-});
+// Initialize Analytics with a more reliable approach that doesn't use promises
+let analyticsInstance = null;
 
-export { app, auth, db, analytics }; // Export analytics
+// Function to get analytics that components can call directly
+const getAnalyticsInstance = async () => {
+  if (analyticsInstance) return analyticsInstance;
+  
+  try {
+    const isAnalyticsSupported = await isSupported();
+    if (isAnalyticsSupported) {
+      analyticsInstance = getAnalytics(app);
+      console.log("Firebase Analytics initialized.");
+      return analyticsInstance;
+    } else {
+      console.log("Firebase Analytics is not supported in this environment.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error initializing Firebase Analytics:", error);
+    return null;
+  }
+};
+
+// Initialize analytics immediately
+getAnalyticsInstance();
+
+// Export a simple analytics object that doesn't rely on Promise syntax
+const analytics = {
+  logEvent: async (eventName, eventParams) => {
+    const analyticsInstance = await getAnalyticsInstance();
+    if (analyticsInstance) {
+      const { logEvent: firebaseLogEvent } = await import('firebase/analytics');
+      firebaseLogEvent(analyticsInstance, eventName, eventParams);
+    }
+  }
+};
+
+// Add the proxy configuration
+const IS_DEVELOPMENT = window.location.hostname === 'localhost';
+const PROXY_URL = 'http://localhost:3000';
+
+// Custom function to get Firebase Functions with optional emulator connection
+export const getFunctions = () => {
+  const functions = getOriginalFunctions(getApp());
+  
+  // If in development, connect to the functions emulator
+  if (IS_DEVELOPMENT) {
+    try {
+      // Connect to local emulator without region path
+      connectFunctionsEmulator(functions, 'localhost', 3000);
+      
+      // Set region to match our deployed functions
+      functions.region = 'us-central1';
+      
+      // Log configuration for debugging
+      console.log("Firebase Functions configured for development:");
+      console.log("- Using emulator on localhost:3000");
+      console.log("- Region: us-central1");
+    } catch (error) {
+      console.warn('Failed to connect to Functions emulator:', error);
+    }
+  }
+  
+  return functions;
+};
+
+export { app, auth, db, analytics };
 
